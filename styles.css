@@ -1,0 +1,443 @@
+/* =========================
+   Theme Variables
+========================= */
+:root{
+  --bg:#0f172a;
+  --card:#1e293b;
+  --accent:#3b82f6;
+  --text:#f1f5f9;
+  --muted:#94a3b8;
+  --border:#334155;
+}
+
+/* =========================
+   Base
+========================= */
+*{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  font-family:'Inter',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  line-height:1.5;
+}
+
+.muted{ color:var(--muted); }
+
+.footer{
+  border-top:1px solid var(--border);
+}
+
+/* =========================
+   Layout
+========================= */
+.topbar{
+  background:var(--card);
+  padding:1rem;
+  border-bottom:1px solid var(--border);
+  text-align:center;
+}
+.topbar h1{
+  margin:0;
+  font-size:1.25rem;
+  color:var(--accent);
+}
+
+.container{
+  max-width:1000px;
+  margin:2rem auto;
+  padding:0 1rem;
+  display:flex;
+  flex-direction:column;
+  gap:1.5rem;
+}
+
+.split{
+  display:grid;
+  grid-template-columns:1.5fr 1fr;
+  gap:1.5rem;
+}
+@media (max-width:768px){
+  .split{ grid-template-columns:1fr; }
+}
+
+/* =========================
+   Card
+========================= */
+.card{
+  background:var(--card);
+  padding:1.5rem;
+  border-radius:12px;
+  border:1px solid var(--border);
+}
+.card h2{
+  margin-top:0;
+  font-size:1rem;
+  color:var(--muted);
+  border-left:4px solid var(--accent);
+  padding-left:10px;
+}
+
+/* =========================
+   Drag & Drop
+========================= */
+.drop-zone{
+  border:2px dashed var(--border);
+  border-radius:10px;
+  padding:2rem;
+  text-align:center;
+  cursor:pointer;
+  transition:.3s;
+  color:var(--muted);
+}
+.drop-zone.hover{
+  border-color:var(--accent);
+  background:rgba(59,130,246,.1);
+}
+
+/* =========================
+   Data Stat
+========================= */
+.data-stat-row{
+  display:flex;
+  align-items:center;
+  gap:2rem;
+  margin:1.5rem 0;
+  flex-wrap:wrap;
+}
+.stat-item{
+  font-size:.9rem;
+  color:var(--text);
+}
+
+.status-warning{ color:#f59e0b; }
+
+/* =========================
+   Table
+========================= */
+.table-container{
+  overflow-x:auto;
+  overflow-y:auto;
+  margin:1rem 0;
+  max-height:400px;
+  border-radius:8px;
+  border:1px solid var(--border);
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:.8rem;
+}
+th{
+  background:#0f172a;
+  padding:10px;
+  border-bottom:2px solid var(--border);
+  color:var(--accent);
+  text-align:center;
+  position:sticky;
+  top:0;
+  z-index:1;
+}
+td{
+  border:1px solid var(--border);
+  padding:6px;
+  text-align:center;
+}
+
+.table-actions{
+  display:flex;
+  justify-content:flex-end;
+  margin-top:10px;
+}
+
+/* =========================
+   Forms (Inputs)
+========================= */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(150px, 1fr));
+  gap:1rem;
+}
+
+.field label{
+  display:block;
+  font-size:.75rem;
+  color:var(--muted);
+  margin-bottom:5px;
+}
+
+select, input, textarea{
+  width:100%;
+  padding:10px;
+  border-radius:8px;
+  border:1px solid var(--border);
+  background:#0f172a;
+  color:#fff;
+  box-sizing:border-box;
+}
+
+select[multiple]{
+  min-height:180px;
+  line-height:1.4;
+}
+
+textarea{
+  font-family:monospace;
+}
+
+/* =========================
+   Buttons
+========================= */
+.actions{
+  display:flex;
+  gap:10px;
+  margin-top:1rem;
+  flex-wrap:wrap;
+}
+
+.btn{
+  border:none;
+  padding:10px 20px;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:600;
+  transition:.2s;
+  white-space:nowrap;
+}
+
+.btn-primary{
+  background:var(--accent);
+  color:#fff;
+}
+.btn-primary:hover{ opacity:.9; }
+
+.btn-ghost{
+  background:transparent;
+  color:var(--muted);
+  border:1px solid var(--border);
+}
+
+.btn-warn{
+  background:#ef4444;
+  color:#fff;
+}
+.btn-warn:hover{ opacity:.9; }
+
+.btn:disabled{
+  opacity:.5;
+  cursor:not-allowed;
+}
+
+/* =========================
+   Logs
+========================= */
+.log{
+  background:#000;
+  padding:1rem;
+  border-radius:8px;
+  height:250px;
+  overflow-y:auto;
+  font-family:monospace;
+  font-size:.8rem;
+  color:#10b981;
+  white-space:pre-wrap;
+  line-height:1.8;
+}
+
+/* =========================
+   Result Boxes
+   (เปลี่ยนจาก flex เดิม -> block เพื่อรองรับข้อความหลายบรรทัด/รายการ)
+========================= */
+.result{
+  margin-top:1rem;
+  padding:1rem;
+  background:rgba(59,130,246,.1);
+  border:1px solid rgba(59,130,246,.25);
+  border-radius:8px;
+  display:block;
+  text-align:left;
+}
+
+/* =========================
+   Collapsible Weight Section
+========================= */
+.collapsible-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  cursor:pointer;
+  user-select:none;
+}
+
+.toggle-icon{
+  color:var(--muted);
+  transition:transform .3s ease;
+}
+.toggle-icon.open{
+  transform:rotate(180deg);
+}
+
+/* Weight Grid */
+.weight-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:1rem;
+  margin-top:1rem;
+}
+.weight-box textarea{
+  height:160px;
+  resize:vertical;
+}
+
+/* =========================
+   Dynamic Predict Grid
+========================= */
+.predict-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(120px, 1fr));
+  gap:10px;
+  max-height:250px;
+  overflow-y:auto;
+  padding-right:5px;
+}
+
+.predict-item label{
+  display:block;
+  font-size:.7rem;
+  color:var(--accent);
+  margin-bottom:3px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.predict-item input{
+  padding:8px;
+  border-radius:6px;
+}
+
+/* =========================
+   Visualization Canvas
+========================= */
+#vizCanvas{
+  background:#0b1220;
+  border:1px solid var(--border);
+  border-radius:10px;
+  display:block;
+  width:100%;
+  height:auto;
+}
+
+/* =========================
+   Evaluation Table (Optional dedicated id)
+========================= */
+#evalTable{
+  width:100%;
+  border-collapse:collapse;
+  font-size:.85rem;
+}
+#evalTable th{
+  background:#0f172a;
+  color:var(--accent);
+  position:sticky;
+  top:0;
+  z-index:1;
+}
+#evalTable td, #evalTable th{
+  border:1px solid var(--border);
+  padding:8px;
+  text-align:center;
+}
+
+/* =========================
+   Details (Explain blocks)
+========================= */
+details{
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:10px 12px;
+  background:rgba(255,255,255,.02);
+}
+details summary{
+  list-style:none;
+  cursor:pointer;
+  color:var(--muted);
+}
+details summary::-webkit-details-marker{ display:none; }
+details[open] summary{ color:var(--text); }
+
+/* Preprocess summary list */
+#preprocessSummaryList{
+  padding-left:18px;
+  margin:10px 0 0;
+}
+#preprocessSummaryList li{ margin:6px 0; }
+
+/* Predict details */
+#predictDetailsText{ word-break:break-word; }
+
+/* =========================
+   Scrollbars (optional polish)
+========================= */
+.table-container::-webkit-scrollbar,
+.predict-grid::-webkit-scrollbar,
+.log::-webkit-scrollbar{
+  width:10px;
+  height:10px;
+}
+.table-container::-webkit-scrollbar-thumb,
+.predict-grid::-webkit-scrollbar-thumb,
+.log::-webkit-scrollbar-thumb{
+  background:rgba(148,163,184,.35);
+  border-radius:10px;
+}
+.table-container::-webkit-scrollbar-track,
+.predict-grid::-webkit-scrollbar-track,
+.log::-webkit-scrollbar-track{
+  background:rgba(255,255,255,.03);
+}
+
+/* =========================
+   Mobile Tweaks
+========================= */
+@media (max-width:768px){
+  .grid{ grid-template-columns:1fr; }
+  .weight-grid{ grid-template-columns:1fr; }
+  .actions{ justify-content:stretch; }
+  .actions .btn{ flex:1; }
+}
+/* ===== Page Navigation ===== */
+.page { display: none; }
+.page.active { display: block; }
+
+.pager{
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  padding: 10px 12px;
+  background: rgba(30,41,59,0.92);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+}
+
+.tab{
+  border: 1px solid var(--border);
+  background: #0f172a;
+  color: var(--muted);
+  padding: 8px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: .15s;
+}
+.tab:hover{ opacity: .9; }
+.tab.active{
+  border-color: rgba(59,130,246,.6);
+  color: #fff;
+  background: rgba(59,130,246,.18);
+}

@@ -1,0 +1,492 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Neural Network Lab - RMUTT Student</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <h1>Neural Network Playground</h1>
+      <div class="muted" style="margin-top:4px;">Dataset → Preprocessing → Build → Train → Evaluate → Predict</div>
+    </div>
+  </header>
+
+  <!-- Page Tabs -->
+  <nav class="pager">
+    <button class="tab active" data-go="0">Dataset</button>
+    <button class="tab" data-go="1">Preprocessing</button>
+    <button class="tab" data-go="2">Build</button>
+    <button class="tab" data-go="3">Train</button>
+    <button class="tab" data-go="4">Evaluate</button>
+    <button class="tab" data-go="5">Predict</button>
+  </nav>
+
+  <main class="container">
+
+    <!-- =========================
+         PAGE 0: DATASET
+    ========================== -->
+    <section class="card page" data-page="0" id="workflowCard">
+      <h2>0. Workflow Overview</h2>
+      <ol class="muted" style="margin: 10px 0 0; line-height: 1.8;">
+        <li><b>Upload CSV</b> → ตรวจแถว/คอลัมน์/ค่าว่าง</li>
+        <li><b>Preprocessing</b> → เลือก columns, จัดการ missing, scaling/encoding, split train/test</li>
+        <li><b>Build Model</b> → ตั้งค่า hidden units / activation / learning rate</li>
+        <li><b>Train</b> → ดู log, loss/accuracy curves</li>
+        <li><b>Evaluate</b> → metrics & confusion matrix / regression metrics</li>
+        <li><b>Predict</b> → ใส่ input ตามฟีเจอร์ที่เลือก</li>
+      </ol>
+      <div class="muted" style="margin-top:10px;">
+        Note: เป็น “แผงนำทาง” ให้ผู้ใช้เข้าใจ flow
+      </div>
+    </section>
+
+    <section class="card page" data-page="0">
+      <h2>1. Dataset Management</h2>
+
+      <div id="dropZone" class="drop-zone">
+        <p id="fileNameDisplay">Drag and drop CSV file here or <b>click to select</b></p>
+        <input id="fileInput" type="file" accept=".csv" hidden />
+      </div>
+
+      <div id="dataStat" class="data-stat-row" style="display:none;">
+        <div class="stat-item">Rows: <b id="metaRows">-</b></div>
+        <div class="stat-item">Inputs (n_in): <b id="metaNIn">-</b></div>
+        <div class="stat-item">Missing Values: <b id="missingCount" class="status-warning">0</b></div>
+      </div>
+
+      <div id="tableWrapper" style="display:none;">
+        <div class="table-container">
+          <table id="dataTable"></table>
+        </div>
+        <div class="table-actions">
+          <button id="btnCleanData" class="btn btn-warn" type="button">Clean Data</button>
+          <button id="btnExportClean" class="btn btn-ghost" type="button">Export Clean CSV</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================
+         PAGE 1: PREPROCESSING
+    ========================== -->
+    <section class="card page" data-page="1" id="preprocessingCard">
+      <h2>1.5 Preprocessing</h2>
+
+      <div class="grid">
+        <div class="field">
+          <label>Target Column (y)</label>
+          <select id="targetCol">
+            <option value="" selected disabled>Upload dataset first...</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Feature Columns (X)</label>
+          <select id="featureCols" multiple size="6">
+            <option value="" disabled>Upload dataset first...</option>
+          </select>
+          <div class="muted" style="margin-top:6px;">Tip: Ctrl/⌘ เพื่อเลือกหลายคอลัมน์</div>
+        </div>
+
+        <div class="field">
+          <label>Missing Value Strategy</label>
+          <select id="missingStrategy">
+            <option value="drop" selected>Drop rows with missing</option>
+            <option value="mean">Impute mean (numeric)</option>
+            <option value="median">Impute median (numeric)</option>
+            <option value="mode">Impute mode (categorical)</option>
+            <option value="zero">Fill with 0</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Scaling</label>
+          <select id="scaling">
+            <option value="none" selected>None</option>
+            <option value="standard">Standardization (z-score)</option>
+            <option value="minmax">Min-Max (0..1)</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Encoding (categorical)</label>
+          <select id="encoding">
+            <option value="auto" selected>Auto detect</option>
+            <option value="onehot">One-Hot Encoding</option>
+            <option value="label">Label Encoding</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Train/Test Split</label>
+          <div style="display:flex; gap:10px; align-items:center;">
+            <input id="testSize" type="number" min="0.05" max="0.95" step="0.05" value="0.2" style="max-width:120px;" />
+            <span class="muted">test size</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Shuffle</label>
+          <select id="shuffle">
+            <option value="true" selected>Yes</option>
+            <option value="false">No</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Random Seed</label>
+          <input id="seed" type="number" value="42" />
+        </div>
+      </div>
+
+      <div class="actions" style="margin-top:15px;">
+        <button id="btnRunPreprocess" class="btn btn-primary" type="button">Run Preprocessing</button>
+        <button id="btnResetPreprocess" class="btn btn-ghost" type="button">Reset</button>
+      </div>
+
+      <div id="preprocessSummary" class="result" style="margin-top:15px;">
+        <div class="muted">Preprocessing Summary:</div>
+        <ul class="muted" id="preprocessSummaryList" style="margin: 10px 0 0; line-height:1.7;">
+          <li>Waiting for preprocessing...</li>
+        </ul>
+      </div>
+
+      <details style="margin-top:12px;">
+        <summary class="muted" style="cursor:pointer;">Show preprocessing steps (explain)</summary>
+        <div class="muted" style="margin-top:10px; line-height:1.8;">
+          <b>Typical pipeline:</b>
+          <ol style="margin:8px 0 0;">
+            <li>Select target (y) และ feature (X)</li>
+            <li>Handle missing values (drop/impute)</li>
+            <li>Encode categorical features</li>
+            <li>Scale numeric features (optional)</li>
+            <li>Split train/test และเตรียม Tensor</li>
+          </ol>
+        </div>
+      </details>
+    </section>
+
+    <!-- =========================
+         PAGE 2: BUILD
+    ========================== -->
+    <section class="card page" data-page="2">
+      <h2>2. Model Configuration</h2>
+      <div class="grid">
+        <div class="field">
+          <label>Task</label>
+          <select id="task">
+            <option value="binary" selected>Binary (0/1)</option>
+            <option value="regression">Regression</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Hidden Units</label>
+          <input id="hidden" type="number" min="1" value="8" />
+        </div>
+
+        <div class="field">
+          <label>Activation</label>
+          <select id="activation">
+            <option value="tanh" selected>tanh</option>
+            <option value="relu">relu</option>
+            <option value="leakyRelu">leakyRelu</option>
+            <option value="sigmoid">sigmoid</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Epochs</label>
+          <input id="epochs" type="number" min="1" value="200" />
+        </div>
+
+        <div class="field">
+          <label>Learning Rate</label>
+          <input id="lr" type="number" step="0.0001" value="0.01" />
+        </div>
+
+        <div class="field">
+          <label>Loss (optional)</label>
+          <select id="lossSelect">
+            <option value="auto" selected>Auto</option>
+            <option value="binaryCrossentropy">binaryCrossentropy</option>
+            <option value="meanSquaredError">meanSquaredError</option>
+            <option value="meanAbsoluteError">meanAbsoluteError</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Metric (optional)</label>
+          <select id="metricSelect">
+            <option value="auto" selected>Auto</option>
+            <option value="accuracy">accuracy</option>
+            <option value="mse">mse</option>
+            <option value="mae">mae</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="btnBuild" class="btn btn-primary" type="button">Build Model</button>
+      </div>
+
+      <div id="modelSummary" class="result" style="margin-top:15px;">
+        <span class="muted">Model Summary:</span> <b id="modelSummaryText">-</b>
+      </div>
+    </section>
+
+    <section class="card page" data-page="2">
+      <div class="collapsible-header" id="weightToggleBtn">
+        <h2 style="margin: 0;">3. Weight Configuration (Optional)</h2>
+        <span id="weightIcon" class="toggle-icon">▼</span>
+      </div>
+
+      <div id="weightContentArea" style="display: none; margin-top: 15px;">
+        <div class="weight-grid">
+          <div class="weight-box">
+            <label>W1 (Hidden Weights)</label>
+            <textarea id="w1_input" placeholder="1 neuron per line"></textarea>
+          </div>
+          <div class="weight-box">
+            <label>b1 (Hidden Bias)</label>
+            <textarea id="b1_input" placeholder="Comma-separated values"></textarea>
+          </div>
+          <div class="weight-box">
+            <label>W2 (Output Weights)</label>
+            <textarea id="w2_input" placeholder="Comma-separated values"></textarea>
+          </div>
+          <div class="weight-box">
+            <label>b2 (Output Bias)</label>
+            <textarea id="b2_input" placeholder="Single number"></textarea>
+          </div>
+        </div>
+        <div class="actions">
+          <button id="btnDumpWeights" class="btn btn-ghost" type="button">Get Weights</button>
+          <button id="btnApplyWeights" class="btn" type="button">Apply Weights</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="card page" data-page="2" id="vizCard">
+      <h2>3.5 Visualization</h2>
+
+      <div class="grid">
+        <div class="field">
+          <label>Chart Type</label>
+          <select id="vizType">
+            <option value="lossCurve" selected>Loss Curve</option>
+            <option value="accCurve">Accuracy Curve</option>
+            <option value="scatter2d">2D Scatter (if 2 features)</option>
+            <option value="decisionBoundary">Decision Boundary (binary, 2 features)</option>
+            <option value="confusionMatrix">Confusion Matrix (binary)</option>
+            <option value="predVsTrue">Pred vs True (regression)</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>X-Axis (optional)</label>
+          <select id="vizX">
+            <option value="auto" selected>Auto</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Y-Axis (optional)</label>
+          <select id="vizY">
+            <option value="auto" selected>Auto</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Resolution (boundary)</label>
+          <input id="vizResolution" type="number" min="50" max="400" value="150" />
+        </div>
+      </div>
+
+      <div class="actions" style="margin-top:15px;">
+        <button id="btnRenderViz" class="btn btn-primary" type="button">Render Visualization</button>
+        <button id="btnClearViz" class="btn btn-ghost" type="button">Clear</button>
+      </div>
+
+      <div class="table-container" style="margin-top:15px;">
+        <canvas id="vizCanvas" width="900" height="380" style="width:100%;"></canvas>
+      </div>
+
+      <div id="vizNote" class="muted" style="margin-top:10px;">
+        Visualization จะทำงานเมื่อ JS ผูก event และวาดกราฟลง canvas
+      </div>
+    </section>
+
+    <section class="card page" data-page="2" id="algoCard">
+      <h2>7. Algorithm Explanation (Neural Network)</h2>
+
+      <div class="grid">
+        <div class="field">
+          <label>View</label>
+          <div class="actions" style="justify-content:flex-start;">
+            <button id="algoTabOverview" class="btn btn-primary" type="button">Overview</button>
+            <button id="algoTabForward" class="btn" type="button">Forward Pass</button>
+            <button id="algoTabLoss" class="btn" type="button">Loss</button>
+            <button id="algoTabBackprop" class="btn" type="button">Backprop</button>
+            <button id="algoTabUpdate" class="btn" type="button">Update Rule</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="algoContent" class="result" style="margin-top:15px;">
+        <div id="algoOverview">
+          <div class="muted">What you are building</div>
+          <div style="margin-top:10px; line-height:1.9;">
+            <b>Model:</b> 1-hidden-layer Neural Network (Dense → Activation → Dense)<br/>
+            <b>Goal:</b> เรียนรู้พารามิเตอร์ (W,b) ให้ทำนายได้แม่นยำจากข้อมูล<br/>
+            <b>Training:</b> ทำซ้ำหลาย epoch โดยใช้ Gradient Descent เพื่อลด Loss
+          </div>
+        </div>
+
+        <div id="algoForward" style="display:none;">
+          <div class="muted">Forward Pass</div>
+          <div style="margin-top:10px; line-height:1.9;">
+            <b>Hidden:</b> z1 = XW1 + b1 → a1 = activation(z1)<br/>
+            <b>Output:</b> z2 = a1W2 + b2 → ŷ = output(z2)<br/>
+            Binary มักใช้ sigmoid ที่ output, Regression ใช้ linear
+          </div>
+        </div>
+
+        <div id="algoLoss" style="display:none;">
+          <div class="muted">Loss Function</div>
+          <div style="margin-top:10px; line-height:1.9;">
+            <b>Binary:</b> Binary Cross-Entropy วัดความผิดพลาดของความน่าจะเป็น<br/>
+            <b>Regression:</b> MSE วัดค่าเฉลี่ยกำลังสองของ error (ŷ − y)
+          </div>
+        </div>
+
+        <div id="algoBackprop" style="display:none;">
+          <div class="muted">Backpropagation (concept)</div>
+          <div style="margin-top:10px; line-height:1.9;">
+            คำนวณ gradient ของ loss ต่อพารามิเตอร์แต่ละตัวด้วย chain rule<br/>
+            dL/dW2, dL/db2, dL/dW1, dL/db1 แล้วส่งกลับผ่าน activation
+          </div>
+        </div>
+
+        <div id="algoUpdate" style="display:none;">
+          <div class="muted">Parameter Update</div>
+          <div style="margin-top:10px; line-height:1.9;">
+            Gradient Descent: <b>W := W − lr · ∂L/∂W</b> และ <b>b := b − lr · ∂L/∂b</b><br/>
+            lr (learning rate) คุม “ก้าว” ในการปรับพารามิเตอร์
+          </div>
+        </div>
+      </div>
+
+      <details style="margin-top:12px;">
+        <summary class="muted" style="cursor:pointer;">Show tips for students</summary>
+        <div class="muted" style="margin-top:10px; line-height:1.8;">
+          <ul style="margin:0; padding-left:18px;">
+            <li>เริ่มจาก hidden น้อยๆ (เช่น 4–16) แล้วค่อยปรับ</li>
+            <li>ถ้า loss ไม่ลง: ลด lr หรือเพิ่ม epochs</li>
+            <li>ถ้า overfit: ลด hidden/epochs หรือเพิ่ม regularization (ทำใน JS เพิ่มได้)</li>
+          </ul>
+        </div>
+      </details>
+    </section>
+
+    <!-- =========================
+         PAGE 3: TRAIN
+    ========================== -->
+    <section class="card page" data-page="3">
+      <h2>4. Training Log</h2>
+      <div id="log" class="log"></div>
+
+      <div class="actions" style="margin-top:15px;">
+        <button id="btnTrain" class="btn btn-primary" type="button">Start Training</button>
+        <button id="btnResetLog" class="btn btn-ghost" type="button">Clear Log</button>
+      </div>
+
+      <div class="data-stat-row" style="margin-top:15px;">
+        <div class="stat-item">Train Loss: <b id="trainLoss">-</b></div>
+        <div class="stat-item">Train Metric: <b id="trainMetric">-</b></div>
+        <div class="stat-item">Val Loss: <b id="valLoss">-</b></div>
+      </div>
+    </section>
+
+    <!-- =========================
+         PAGE 4: EVALUATE
+    ========================== -->
+    <section class="card page" data-page="4" id="evaluationCard">
+      <h2>6. Evaluation</h2>
+
+      <div class="actions" style="margin-top:10px;">
+        <button id="btnEvaluate" class="btn btn-primary" type="button">Evaluate on Test Set</button>
+        <button id="btnExportReport" class="btn btn-ghost" type="button">Export Report</button>
+      </div>
+
+      <div class="grid" style="margin-top:15px;">
+        <div class="result">
+          <div class="muted">Binary metrics</div>
+          <div style="display:flex; gap:16px; flex-wrap:wrap; margin-top:10px;">
+            <div>Accuracy: <b id="mAcc">-</b></div>
+            <div>Precision: <b id="mPrec">-</b></div>
+            <div>Recall: <b id="mRec">-</b></div>
+            <div>F1: <b id="mF1">-</b></div>
+          </div>
+        </div>
+
+        <div class="result">
+          <div class="muted">Regression metrics</div>
+          <div style="display:flex; gap:16px; flex-wrap:wrap; margin-top:10px;">
+            <div>MSE: <b id="mMse">-</b></div>
+            <div>MAE: <b id="mMae">-</b></div>
+            <div>R²: <b id="mR2">-</b></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-container" style="margin-top:15px;">
+        <table id="evalTable"></table>
+      </div>
+
+      <details style="margin-top:12px;">
+        <summary class="muted" style="cursor:pointer;">Show evaluation explanation</summary>
+        <div class="muted" style="margin-top:10px; line-height:1.8;">
+          <b>Binary:</b> confusion matrix → accuracy/precision/recall/F1<br/>
+          <b>Regression:</b> เปรียบเทียบ ŷ กับ y จริง → MSE/MAE/R²
+        </div>
+      </details>
+    </section>
+
+    <!-- =========================
+         PAGE 5: PREDICT
+    ========================== -->
+    <section class="card page" data-page="5">
+      <h2>5. Predict</h2>
+
+      <div id="dynamicPredictInputsContainer" class="field">
+        <label class="muted">Upload a Dataset first to generate input fields...</label>
+      </div>
+
+      <div class="actions" style="margin-top:15px;">
+        <button id="btnPredict" class="btn btn-primary" type="button" style="width:100%;">Predict</button>
+      </div>
+
+      <div id="result" class="result">
+        <span class="muted">Prediction:</span> <b>-</b>
+      </div>
+
+      <div id="predictDetails" class="result" style="margin-top:12px;">
+        <span class="muted">Details:</span>
+        <div class="muted" id="predictDetailsText" style="margin-top:8px;">-</div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer muted" style="text-align:center; padding:20px;">
+    &copy; 10/11 GROUP
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
